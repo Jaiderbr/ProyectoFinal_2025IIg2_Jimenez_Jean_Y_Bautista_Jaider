@@ -1,0 +1,94 @@
+.footer {
+  background-color: #0a0a0a;
+  color: #ccc;
+  padding: 3rem 1.5rem 1rem;
+  font-family: "Inter", sans-serif;
+  border-top: 2px solid #222;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+/* --- About Section --- */
+.footer-about h2 {
+  color: #ffd700;
+  font-size: 1.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.footer-about p {
+  line-height: 1.6;
+  font-size: 0.95rem;
+  color: #bbb;
+}
+
+/* --- Links Section --- */
+.footer-links h3,
+.footer-social h3 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+  position: relative;
+}
+
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: #bbb;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #ffd700;
+}
+
+/* --- Social Section --- */
+.social-icons {
+  display: flex;
+  gap: 1rem;
+}
+
+.social-icons a {
+  color: #ccc;
+  font-size: 1.4rem;
+  transition: color 0.3s ease;
+}
+
+.social-icons a:hover {
+  color: #ffd700;
+}
+
+/* --- Footer bottom line --- */
+.footer-bottom {
+  text-align: center;
+  padding-top: 1rem;
+  margin-top: 2rem;
+  border-top: 1px solid #222;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .social-icons {
+    justify-content: center;
+  }
+}

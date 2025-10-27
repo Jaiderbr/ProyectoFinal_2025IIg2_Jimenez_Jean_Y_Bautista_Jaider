@@ -1,0 +1,30 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+    height: 100vh;
+    width: 100vw;
+}
+
+
+
+.main-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f8f8f8;
+}
+
+
+.main-content {
+    flex: 1;
+    /* ocupa todo el espacio disponible */
+    padding: 2rem;
+}
