@@ -6,13 +6,12 @@ import './MainPage.css'
 
 const MainPage = () => {
   return (
-    <div className="main-page">
+    <>
       <Header />
-      <div className="main-content">
-        <Main />
-      </div>
+      <Main />
       <Footer />
-    </div>
+    </>
+
   )
 }
 
