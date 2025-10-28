@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { auth, db } from "../../Firebase/config";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+
 import "./Register.css";
 
 const Register = () => {
+
   const navigate = useNavigate();
   const [form, setForm] = useState({
     username: "",
