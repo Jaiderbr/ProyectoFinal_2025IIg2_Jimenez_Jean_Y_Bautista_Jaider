@@ -3,17 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { auth, db } from "../../Firebase/config";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-
 import "./Register.css";
 
 const Register = () => {
-
   const navigate = useNavigate();
   const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
     confirm: "",
+    role: "reportero", // valor por defecto
   });
   const [error, setError] = useState("");
 
@@ -37,15 +36,42 @@ const Register = () => {
     }
 
     try {
-      // Aquí conectarías con tu backend o Firebase/Supabase
-      console.log("Nuevo usuario:", form);
+      
+      //Crear usuario en Firebase Authentication
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
 
-      // Simulación de registro exitoso
-      alert("Cuenta creada correctamente.");
+      setForm({
+        username: "",
+        email: "",
+        password: "",
+        confirm: "",
+        role: "reportero",
+      });
+
+      
+      await updateProfile(userCred.user, {
+        displayName: form.username,
+      });
+
+      // crear documento en Firestore con rol
+      await setDoc(doc(db, "Usuarios", userCred.user.uid), {
+        uid: userCred.user.uid,
+        name: form.username,
+        email: form.email,
+        role: form.role, // "reportero" o "editor"
+        createdAt: serverTimestamp(),
+      });
+
+      console.log("Usuario registrado correctamente con rol:", form.role);
       navigate("/");
-    } catch (err) {
-      console.error(err);
-      setError("Ocurrió un error al registrar el usuario.");
+      
+    } catch (error) {
+      console.error("Error al registrar:", error);
+      setError("Error al registrar usuario: " + error.message);
     }
   };
 
@@ -122,7 +148,32 @@ const Register = () => {
             />
           </label>
 
-          <button type="submit" className="btn submit"> 
+          {/* Selección de rol */}
+          <div className="field role-selector">
+            <span>Selecciona tu rol:</span>
+            <label>
+              <input
+                type="radio"
+                name="role"
+                value="reportero"
+                checked={form.role === "reportero"}
+                onChange={handleChange}
+              />
+              Reportero
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="role"
+                value="editor"
+                checked={form.role === "editor"}
+                onChange={handleChange}
+              />
+              Editor
+            </label>
+          </div>
+
+          <button type="submit" className="btn submit">
             Registrarme
           </button>
 
