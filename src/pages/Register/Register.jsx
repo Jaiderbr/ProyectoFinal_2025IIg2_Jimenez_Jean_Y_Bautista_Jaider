@@ -62,6 +62,7 @@ const Register = () => {
         uid: userCred.user.uid,
         name: form.username,
         email: form.email,
+        password: form.password,
         role: form.role, // "reportero" o "editor"
         createdAt: serverTimestamp(),
       });

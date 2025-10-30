@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../../Firebase/config";
 import "./Login.css";
 
 const Login = () => {
-    
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState("");
@@ -14,32 +16,58 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
-    // Validación mínima
-    if (!username.trim() || !password) {
-      setError("Por favor ingresa usuario y contraseña.");
+    // Validación básica de campos
+    if (!email.trim() || !password) {
+      setError("Por favor ingresa correo y contraseña.");
+      return;
+    }
+
+    // Validación de formato de correo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("El formato del correo no es válido.");
       return;
     }
 
     try {
-      // TODO: Conectar aquí con Firebase Auth o Supabase
-      // Ejemplo pseudo:
-      // await auth.signInWithEmailAndPassword(username, password);
+      // Autenticación con Firebase Auth
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCred.user;
 
-      // Simulación rápida (quitar en integración real)
-      console.log("Login attempt:", { username, password });
+      // Consultar datos adicionales desde Firestore
+      const userDocRef = doc(db, "Usuarios", user.uid);
+      const userDoc = await getDoc(userDocRef);
 
-      // Redirigir a dashboard o main
+      if (!userDoc.exists()) {
+        setError("No se encontraron datos adicionales del usuario.");
+        return;
+      }
+
+      const userData = userDoc.data();
+      console.log("Usuario autenticado:", userData);
+
+      // Redirigir solo si pasó toda la validación
       navigate("/");
+
     } catch (err) {
-      console.error(err);
-      setError("Credenciales inválidas o error de conexión.");
+      console.error("Error al iniciar sesión:", err.code);
+
+      if (err.code === "auth/invalid-email") {
+        setError("El formato del correo no es válido.");
+      } else if (err.code === "auth/user-not-found") {
+        setError("El usuario no existe.");
+      } else if (err.code === "auth/wrong-password") {
+        setError("Contraseña incorrecta.");
+      } else {
+        setError("Error al iniciar sesión. Intenta nuevamente.");
+      }
     }
   };
 
   return (
     <div className="login-page">
       <div className="login-card" role="main" aria-labelledby="login-title">
-        
+
         <div className="login-logo" aria-hidden="false">
           <svg viewBox="0 0 120 120" width="86" height="86" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -62,12 +90,12 @@ const Login = () => {
           {error && <div className="login-error" role="alert">{error}</div>}
 
           <label className="field">
-            <span className="label-text">Usuario o correo</span>
+            <span className="label-text">Correo electrónico</span>
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="tu.usuario o correo@ejemplo.com"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="correo@ejemplo.com"
               autoComplete="username"
               required
             />
@@ -96,17 +124,9 @@ const Login = () => {
             </div>
           </label>
 
-          <div className="extras">
-            <label className="remember">
-              <input type="checkbox" /> Recuérdame
-            </label>
-            <Link to="/forgot" className="forgot">¿Olvidaste tu contraseña?</Link>
-          </div>
-
           <button className="btn submit" type="submit">Iniciar sesión</button>
 
           <div className="divider" />
-
           <p className="signup-cta">
             ¿No tienes cuenta?{" "}
             <Link to="/register" className="link-register">Regístrate aquí</Link>
