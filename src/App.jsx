@@ -5,6 +5,9 @@ import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import NotFound from "./pages/NotFound/NotFound";
 
+import PanelReportero from './pages/PanelReportero/PanelReportero.jsx';
+import PanelEditor from './pages/PanelEditor/PanelEditor.jsx';
+
 import { useEffect } from "react";
 import { testFirestore } from "./Firebase/testConnection"
 
@@ -23,7 +26,9 @@ function App() {
       <Routes>
         <Route path='/' element={<MainPage />} />
         <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Register />} />
+        <Route path='/register' element={<PanelReportero />} />
+        <Route path='/PanelReportero' element={<PanelEditor />} />
+        <Route path='/PanelEditor' element={<NotFound />} />
         <Route path='*' element={<NotFound />} />
       </Routes>
 

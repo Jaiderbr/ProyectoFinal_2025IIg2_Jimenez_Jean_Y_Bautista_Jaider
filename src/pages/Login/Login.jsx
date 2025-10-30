@@ -47,9 +47,9 @@ const Login = () => {
       console.log("Usuario autenticado:", userData);
 
       if (userData.role === "reportero"){
-        navigate("/");
+        navigate("/PanelReportero");
       }else{
-
+        navigate("/PanelEditor");
       }
       
 
