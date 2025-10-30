@@ -12,7 +12,7 @@ const Register = () => {
     email: "",
     password: "",
     confirm: "",
-    role: "reportero", // valor por defecto
+    role: "reportero",
   });
   const [error, setError] = useState("");
 

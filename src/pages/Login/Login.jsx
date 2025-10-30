@@ -46,8 +46,12 @@ const Login = () => {
       const userData = userDoc.data();
       console.log("Usuario autenticado:", userData);
 
-      // Redirigir solo si pasó toda la validación
-      navigate("/");
+      if (userData.role === "reportero"){
+        navigate("/");
+      }else{
+
+      }
+      
 
     } catch (err) {
       console.error("Error al iniciar sesión:", err.code);
