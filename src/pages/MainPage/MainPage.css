@@ -6,8 +6,8 @@
 
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: #1a1a1a;
+    color: #f0f0f0;
     line-height: 1.6;
     height: 100vh;
     min-width: 100vw;
@@ -30,7 +30,7 @@ body {
 
 .mainmain {
     min-height: 100vh;
-    background-color: #f4f4f4;
+    background-color: #1a1a1a;
 }
 
 
@@ -41,6 +41,7 @@ body {
     flex-wrap: wrap;
     gap: 100px;
     padding: 30px;
+    background-color: #1a1a1a;
 }
 
 /* Form card layout */

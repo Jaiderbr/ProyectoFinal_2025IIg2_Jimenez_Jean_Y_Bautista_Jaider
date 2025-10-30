@@ -17,9 +17,12 @@ import {
     Box,
     InputAdornment,
     OutlinedInput,
+    Switch,
+    FormControlLabel,
 } from "@mui/material";
 import CategoryOutlined from "@mui/icons-material/CategoryOutlined";
 import FlagOutlined from "@mui/icons-material/FlagOutlined";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { collection, addDoc, getDocs, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../Firebase/config";
@@ -28,13 +31,14 @@ import "./MainPage.css";
 const MainPage = () => {
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({
-        Author: "",
-        Caption: "",
-        Category: "",
-        Content: "",
-        Img: "",
-        State: "",
-        Title: "",
+        autor: "",
+        subtitulo: "",
+        categoria: "",
+        contenido: "",
+        imagen: "",
+        estado: "",
+        titulo: "",
+        destacado: false,
     });
     const [error, setError] = useState("");
     const [posts, setPosts] = useState([]);
@@ -43,22 +47,40 @@ const MainPage = () => {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState("");
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [secciones, setSecciones] = useState([]);
+    const [filter, setFilter] = useState({ type: "featured", value: null });
+    const [showScrollTop, setShowScrollTop] = useState(false);
 
     useEffect(() => {
         const fetchPosts = async () => {
             try {
                 const snapshot = await getDocs(collection(db, "Posts"));
-                const data = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                }));
+                const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
                 setPosts(data);
             } catch (err) {
                 console.error("Error al obtener posts:", err);
             }
         };
 
+        const fetchSecciones = async () => {
+            try {
+                const snap = await getDocs(collection(db, "Secciones"));
+                const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+                setSecciones(data.filter((s) => s.estado === true || s.estado === undefined));
+            } catch (err) {
+                console.error("Error al obtener secciones:", err);
+            }
+        };
+
         fetchPosts();
+        fetchSecciones();
+
+        const handleScroll = () => {
+            setShowScrollTop(window.scrollY > 300);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     const handleChange = (e) => {
@@ -71,13 +93,13 @@ const MainPage = () => {
         setImageFile(file);
         const url = URL.createObjectURL(file);
         setImagePreview(url);
-        setForm((f) => ({ ...f, Img: "" }));
+        setForm((f) => ({ ...f, imagen: "" }));
     };
 
     const validate = () => {
         const errs = {};
-        if (!form.Title.trim()) errs.Title = "El título es obligatorio";
-        if (!form.Content.trim()) errs.Content = "El contenido es obligatorio";
+        if (!form.titulo.trim()) errs.Title = "El título es obligatorio";
+        if (!form.contenido.trim()) errs.Content = "El contenido es obligatorio";
         return errs;
     };
 
@@ -110,7 +132,7 @@ const MainPage = () => {
 
         try {
             setLoading(true);
-            let imageUrl = form.Img;
+            let imageUrl = form.imagen;
 
             if (imageFile) {
                 console.log("[upload] iniciando subida a Storage", { bucket: storage.app?.options?.storageBucket });
@@ -123,26 +145,29 @@ const MainPage = () => {
 
             console.log("[firestore] creando documento en Posts...");
             const newDoc = await withTimeout(addDoc(collection(db, "Posts"), {
-                Author: form.Author || "Anónimo",
-                Caption: form.Caption,
-                Category: form.Category,
-                Content: form.Content,
-                Img: imageUrl || "",
-                State: form.State || "borrador",
-                Title: form.Title,
-                createdAt: serverTimestamp(),
+                autor: form.autor || "Anónimo",
+                subtitulo: form.subtitulo,
+                categoria: form.categoria,
+                contenido: form.contenido,
+                imagen: imageUrl || "",
+                estado: form.estado || "borrador",
+                titulo: form.titulo,
+                destacado: Boolean(form.destacado),
+                fechaCreacion: serverTimestamp(),
+                fechaActualizacion: serverTimestamp(),
             }), 20000, "registro de la noticia");
 
             console.log("Post guardado:", newDoc.id);
 
             setForm({
-                Author: "",
-                Caption: "",
-                Category: "",
-                Content: "",
-                Img: "",
-                State: "",
-                Title: "",
+                autor: "",
+                subtitulo: "",
+                categoria: "",
+                contenido: "",
+                imagen: "",
+                estado: "",
+                titulo: "",
+                destacado: false,
             });
             setImageFile(null);
             setImagePreview("");
@@ -151,7 +176,7 @@ const MainPage = () => {
             setShowForm(false);
             setPosts((prev) => [
                 ...prev,
-                { id: newDoc.id, ...form, Img: imageUrl || "", createdAt: new Date() },
+                { id: newDoc.id, ...form, imagen: imageUrl || "", fechaCreacion: new Date() },
             ]);
         } catch (error) {
             console.error("[submit] Error:", error);
@@ -161,23 +186,60 @@ const MainPage = () => {
         }
     };
 
+    const handleSectionClick = (seccionNombre) => {
+        setFilter({ type: "section", value: seccionNombre });
+        setTimeout(() => {
+            const mainContent = document.querySelector('.container');
+            if (!mainContent) return;
+
+            const header = document.querySelector('.header');
+            const headerHeight = header ? header.getBoundingClientRect().height : 0;
+            const extraOffset = 16;
+            const y = mainContent.getBoundingClientRect().top + window.pageYOffset - headerHeight - extraOffset;
+            window.scrollTo({ top: y < 0 ? 0 : y, behavior: 'smooth' });
+        }, 60);
+    };
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     return (
         <div className="mainmain">
-            <Header />
+            <Header onSectionClick={handleSectionClick} />
             <main>
-                <Button variant="contained" color="success" onClick={() => setShowForm(true)}>
+                <Button
+                    variant="contained"
+                    onClick={() => setShowForm(true)}
+                    sx={{
+                        backgroundColor: '#ffd700',
+                        color: '#0a0a0a',
+                        fontWeight: 700,
+                        '&:hover': {
+                            backgroundColor: '#ffaa00',
+                        },
+                    }}
+                >
                     Añadir noticia
                 </Button>
 
                 {showForm && (
                     <Box className="form-card-wrapper">
-                        <Card elevation={6} className="form-card">
+                        <Card
+                            elevation={6}
+                            className="form-card"
+                            sx={{
+                                backgroundColor: '#1a1a1a',
+                                border: '2px solid #ffd700',
+                                boxShadow: '0 8px 32px rgba(255, 215, 0, 0.15)',
+                            }}
+                        >
                             <CardContent>
                                 <Stack spacing={1} sx={{ mb: 2 }}>
-                                    <Typography variant="h5" component="div">
+                                    <Typography variant="h5" component="div" sx={{ color: '#ffd700', fontWeight: 600 }}>
                                         Nueva noticia
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography variant="body2" sx={{ color: '#c0c0c0' }}>
                                         Completa los campos para publicar o guardar como borrador.
                                     </Typography>
                                     {error && (
@@ -187,18 +249,31 @@ const MainPage = () => {
                                     )}
                                 </Stack>
 
-                                <Stack spacing={2} sx={{ '& > *': { width: '100%' } }}>
+                                <Stack spacing={2} sx={{
+                                    '& > *': { width: '100%' },
+                                    '& .MuiTextField-root': {
+                                        '& .MuiOutlinedInput-root': {
+                                            color: '#f0f0f0',
+                                            backgroundColor: '#0a0a0a',
+                                            '& fieldset': { borderColor: '#444' },
+                                            '&:hover fieldset': { borderColor: '#ffd700' },
+                                            '&.Mui-focused fieldset': { borderColor: '#ffd700', borderWidth: '2px' },
+                                        },
+                                        '& .MuiInputLabel-root': { color: '#c0c0c0' },
+                                        '& .MuiInputLabel-root.Mui-focused': { color: '#ffd700' },
+                                    }
+                                }}>
                                     <TextField
                                         label="Autor"
-                                        name="Author"
-                                        value={form.Author}
+                                        name="autor"
+                                        value={form.autor}
                                         onChange={handleChange}
                                         fullWidth
                                     />
                                     <TextField
                                         label="Título"
-                                        name="Title"
-                                        value={form.Title}
+                                        name="titulo"
+                                        value={form.titulo}
                                         onChange={handleChange}
                                         error={Boolean(fieldErrors.Title)}
                                         helperText={fieldErrors.Title}
@@ -208,23 +283,34 @@ const MainPage = () => {
 
                                     <TextField
                                         label="Subtítulo"
-                                        name="Caption"
-                                        value={form.Caption}
+                                        name="subtitulo"
+                                        value={form.subtitulo}
                                         onChange={handleChange}
                                         fullWidth
                                     />
 
-                                    <FormControl fullWidth size="medium">
-                                        <InputLabel id="category-label">Categoría</InputLabel>
+                                    <FormControl fullWidth size="medium" sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            color: '#f0f0f0',
+                                            backgroundColor: '#0a0a0a',
+                                            '& fieldset': { borderColor: '#444' },
+                                            '&:hover fieldset': { borderColor: '#ffd700' },
+                                            '&.Mui-focused fieldset': { borderColor: '#ffd700', borderWidth: '2px' },
+                                        },
+                                        '& .MuiInputLabel-root': { color: '#c0c0c0' },
+                                        '& .MuiInputLabel-root.Mui-focused': { color: '#ffd700' },
+                                        '& .MuiSvgIcon-root': { color: '#ffd700' },
+                                    }}>
+                                        <InputLabel id="section-label">Sección</InputLabel>
                                         <Select
-                                            labelId="category-label"
-                                            label="Categoría"
-                                            name="Category"
-                                            value={form.Category}
+                                            labelId="section-label"
+                                            label="Sección"
+                                            name="categoria"
+                                            value={form.categoria}
                                             onChange={handleChange}
                                             input={
                                                 <OutlinedInput
-                                                    label="Categoría"
+                                                    label="Sección"
                                                     startAdornment={
                                                         <InputAdornment position="start">
                                                             <CategoryOutlined fontSize="small" />
@@ -232,24 +318,49 @@ const MainPage = () => {
                                                     }
                                                 />
                                             }
+                                            MenuProps={{
+                                                PaperProps: {
+                                                    sx: {
+                                                        backgroundColor: '#1a1a1a',
+                                                        border: '1px solid #444',
+                                                        '& .MuiMenuItem-root': {
+                                                            color: '#f0f0f0',
+                                                            '&:hover': { backgroundColor: '#2a2a2a' },
+                                                            '&.Mui-selected': { backgroundColor: '#ffd70020', '&:hover': { backgroundColor: '#ffd70030' } },
+                                                        },
+                                                    }
+                                                }
+                                            }}
                                         >
                                             <MenuItem value="">
-                                                <em>Sin categoría</em>
+                                                <em>Seleccione una sección</em>
                                             </MenuItem>
-                                            <MenuItem value="Deportes">Deportes</MenuItem>
-                                            <MenuItem value="Tecnología">Tecnología</MenuItem>
-                                            <MenuItem value="Política">Política</MenuItem>
-                                            <MenuItem value="Entretenimiento">Entretenimiento</MenuItem>
+                                            {secciones.map((s) => (
+                                                <MenuItem key={s.id} value={s.nombre}>
+                                                    {s.nombre}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </FormControl>
 
-                                    <FormControl fullWidth size="medium">
+                                    <FormControl fullWidth size="medium" sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            color: '#f0f0f0',
+                                            backgroundColor: '#0a0a0a',
+                                            '& fieldset': { borderColor: '#444' },
+                                            '&:hover fieldset': { borderColor: '#ffd700' },
+                                            '&.Mui-focused fieldset': { borderColor: '#ffd700', borderWidth: '2px' },
+                                        },
+                                        '& .MuiInputLabel-root': { color: '#c0c0c0' },
+                                        '& .MuiInputLabel-root.Mui-focused': { color: '#ffd700' },
+                                        '& .MuiSvgIcon-root': { color: '#ffd700' },
+                                    }}>
                                         <InputLabel id="state-label">Estado</InputLabel>
                                         <Select
                                             labelId="state-label"
                                             label="Estado"
-                                            name="State"
-                                            value={form.State}
+                                            name="estado"
+                                            value={form.estado}
                                             onChange={handleChange}
                                             input={
                                                 <OutlinedInput
@@ -261,6 +372,19 @@ const MainPage = () => {
                                                     }
                                                 />
                                             }
+                                            MenuProps={{
+                                                PaperProps: {
+                                                    sx: {
+                                                        backgroundColor: '#1a1a1a',
+                                                        border: '1px solid #444',
+                                                        '& .MuiMenuItem-root': {
+                                                            color: '#f0f0f0',
+                                                            '&:hover': { backgroundColor: '#2a2a2a' },
+                                                            '&.Mui-selected': { backgroundColor: '#ffd70020', '&:hover': { backgroundColor: '#ffd70030' } },
+                                                        },
+                                                    }
+                                                }
+                                            }}
                                         >
                                             <MenuItem value="">
                                                 <em>Seleccionar estado</em>
@@ -270,10 +394,29 @@ const MainPage = () => {
                                         </Select>
                                     </FormControl>
 
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                checked={Boolean(form.destacado)}
+                                                onChange={(e) => setForm((f) => ({ ...f, destacado: e.target.checked }))}
+                                                sx={{
+                                                    '& .MuiSwitch-switchBase.Mui-checked': {
+                                                        color: '#ffd700',
+                                                    },
+                                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                                        backgroundColor: '#ffd700',
+                                                    },
+                                                }}
+                                            />
+                                        }
+                                        label="Destacado"
+                                        sx={{ color: '#f0f0f0' }}
+                                    />
+
                                     <TextField
                                         label="Contenido"
-                                        name="Content"
-                                        value={form.Content}
+                                        name="contenido"
+                                        value={form.contenido}
                                         onChange={handleChange}
                                         error={Boolean(fieldErrors.Content)}
                                         helperText={fieldErrors.Content}
@@ -284,7 +427,19 @@ const MainPage = () => {
                                     />
 
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center">
-                                        <Button variant="outlined" component="label" disabled={loading}>
+                                        <Button
+                                            variant="outlined"
+                                            component="label"
+                                            disabled={loading}
+                                            sx={{
+                                                borderColor: '#ffd700',
+                                                color: '#ffd700',
+                                                '&:hover': {
+                                                    borderColor: '#ffaa00',
+                                                    backgroundColor: '#ffd70010',
+                                                },
+                                            }}
+                                        >
                                             Seleccionar imagen
                                             <input
                                                 type="file"
@@ -293,20 +448,20 @@ const MainPage = () => {
                                                 onChange={handleFileChange}
                                             />
                                         </Button>
-                                        <Typography variant="body2" color="text.secondary">
+                                        <Typography variant="body2" sx={{ color: '#c0c0c0' }}>
                                             {imageFile ? imageFile.name : "No hay archivo seleccionado"}
                                         </Typography>
                                         {uploadProgress > 0 && uploadProgress < 100 && (
-                                            <Typography variant="caption" color="text.secondary">
+                                            <Typography variant="caption" sx={{ color: '#ffd700' }}>
                                                 Subiendo: {uploadProgress}%
                                             </Typography>
                                         )}
                                     </Stack>
                                     <Box>
-                                        {imagePreview || form.Img ? (
+                                        {imagePreview || form.imagen ? (
                                             <Box className="img-preview-wrapper">
                                                 <img
-                                                    src={imagePreview || form.Img}
+                                                    src={imagePreview || form.imagen}
                                                     alt="Vista previa"
                                                     className="img-preview"
                                                     onError={(e) => (e.currentTarget.style.display = "none")}
@@ -323,7 +478,6 @@ const MainPage = () => {
                             <CardActions sx={{ justifyContent: "flex-end" }}>
                                 <Button
                                     variant="text"
-                                    color="inherit"
                                     onClick={() => {
                                         setShowForm(false);
                                         setError("");
@@ -333,13 +487,26 @@ const MainPage = () => {
                                         setUploadProgress(0);
                                     }}
                                     disabled={loading}
+                                    sx={{
+                                        color: '#c0c0c0',
+                                        '&:hover': {
+                                            backgroundColor: '#2a2a2a',
+                                        },
+                                    }}
                                 >
                                     Cancelar
                                 </Button>
                                 <Button
                                     variant="contained"
-                                    color="primary"
                                     onClick={handleSubmit}
+                                    sx={{
+                                        backgroundColor: '#ffd700',
+                                        color: '#0a0a0a',
+                                        fontWeight: 600,
+                                        '&:hover': {
+                                            backgroundColor: '#ffaa00',
+                                        },
+                                    }}
                                     disabled={loading}
                                 >
                                     {loading ? "Guardando..." : "Guardar noticia"}
@@ -350,12 +517,63 @@ const MainPage = () => {
                 )}
 
                 <div className="container">
-                    {posts.map((post) => (
-                        <CardsNews key={post.id} post={post} />
-                    ))}
+                    {(() => {
+                        const normalized = (str) => (str || "").toString().toLowerCase();
+                        const filtered = (posts || [])
+                            .filter((p) => {
+                                const isFeatured = p.destacado === true;
+                                const cat = p.categoria || p.Category || p.category;
+                                if (filter.type === "featured") return isFeatured;
+                                if (filter.type === "section") return normalized(cat) === normalized(filter.value);
+                                return true;
+                            })
+                            .sort((a, b) => {
+                                const getTime = (x) => {
+                                    const ts = x.fechaCreacion || x.createdAt;
+                                    return ts?.seconds ? ts.seconds : 0;
+                                };
+                                return getTime(b) - getTime(a);
+                            });
+                        if (!filtered.length) {
+                            return (
+                                <Typography variant="body2" color="text.secondary">
+                                    No hay noticias para mostrar.
+                                </Typography>
+                            );
+                        }
+                        return filtered.map((post) => <CardsNews key={post.id} post={post} />);
+                    })()}
                 </div>
             </main>
             <Footer />
+
+            {showScrollTop && (
+                <Button
+                    onClick={scrollToTop}
+                    variant="contained"
+                    sx={{
+                        position: 'fixed',
+                        bottom: 24,
+                        right: 24,
+                        borderRadius: '50%',
+                        minWidth: 56,
+                        height: 56,
+                        backgroundColor: '#ffd700',
+                        color: '#0a0a0a',
+                        boxShadow: '0 4px 20px rgba(255, 215, 0, 0.4)',
+                        zIndex: 1000,
+                        '&:hover': {
+                            backgroundColor: '#ffaa00',
+                            transform: 'scale(1.1)',
+                            transition: 'transform 0.2s ease',
+                            boxShadow: '0 6px 24px rgba(255, 215, 0, 0.6)',
+                        },
+                    }}
+                    aria-label="Volver arriba"
+                >
+                    <ArrowUpwardIcon />
+                </Button>
+            )}
         </div>
     );
 };
