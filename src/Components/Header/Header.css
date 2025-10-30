@@ -17,39 +17,6 @@
   margin: 0 auto;
 }
 
-/* LOGO */
-.logo a {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #fff;
-  text-decoration: none;
-  letter-spacing: 1px;
-  transition: color 0.3s ease;
-}
-
-.logo a:hover {
-  color: #ffd700;
-}
-
-/* NAV LINKS */
-.nav ul {
-  display: flex;
-  gap: 1.5rem;
-  list-style: none;
-}
-
-.nav a {
-  color: #ccc;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-
-.nav a:hover,
-.nav a.active {
-  color: #ffd700;
-}
-
 /* AUTH BUTTONS */
 .auth-buttons {
   display: flex;
@@ -84,49 +51,69 @@
   background-color: #ffcc00;
 }
 
-/* RESPONSIVE NAVIGATION */
-.menu-toggle {
-  display: none;
+.sections-container {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 30px;
+  padding: 30px;
+  background-color: #f5f7fa;
+  min-height: 90vh;
+}
+
+/* ==== Panel Izquierdo ==== */
+.left-panel {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  padding: 25px;
+  display: flex;
   flex-direction: column;
-  cursor: pointer;
-  gap: 4px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+  text-align: center;
 }
 
-.menu-toggle .bar {
-  width: 25px;
-  height: 3px;
-  background-color: #fff;
-  transition: 0.3s;
+.left-panel h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1f2937;
 }
 
-/* Vista móvil */
-@media (max-width: 768px) {
-  .nav {
-    position: absolute;
-    top: 64px;
-    left: 0;
-    width: 100%;
-    background-color: #111;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    padding: 1rem 0;
-  }
+.left-panel p {
+  color: #4b5563;
+  font-size: 0.95rem;
+  margin: 0;
+}
 
-  .nav.open {
-    display: flex;
-  }
+.illustration {
+  width: 200px;
+  height: auto;
+  object-fit: contain;
+  margin-top: 15px;
+}
 
-  .nav ul {
-    flex-direction: column;
-    gap: 1rem;
-  }
+/* ==== Panel Derecho ==== */
+.right-panel {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+}
 
-  .auth-buttons {
-    display: none;
-  }
+/* Grid que contiene las cards */
+.sections-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+}
 
-  .menu-toggle {
-    display: flex;
-  }
+/* Centrado si no hay datos */
+.no-data {
+  text-align: center;
+  color: #6b7280;
+  margin-top: 40px;
 }
