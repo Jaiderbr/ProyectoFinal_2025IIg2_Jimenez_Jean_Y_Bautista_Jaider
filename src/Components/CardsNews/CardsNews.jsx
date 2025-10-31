@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
@@ -32,6 +33,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
     boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
     border: "2px solid #333",
+    cursor: "pointer",
     "&:hover": {
         transform: "translateY(-8px) scale(1.02)",
         boxShadow: "0 20px 48px rgba(255, 215, 0, 0.3)",
@@ -55,15 +57,24 @@ const StyledCardMedia = styled(CardMedia)({
     },
 });
 
-function CardsNews({ post }) {
+function CardsNews({ post, clickable = false }) {
+    const navigate = useNavigate();
     const [expanded, setExpanded] = React.useState(false);
     const [liked, setLiked] = React.useState(false);
 
-    const handleExpandClick = () => {
+    const handleCardClick = () => {
+        if (clickable && post.id) {
+            navigate(`/noticia/${post.id}`);
+        }
+    };
+
+    const handleExpandClick = (e) => {
+        e.stopPropagation();
         setExpanded(!expanded);
     };
 
-    const handleLikeClick = () => {
+    const handleLikeClick = (e) => {
+        e.stopPropagation();
         setLiked(!liked);
     };
 
@@ -113,7 +124,7 @@ function CardsNews({ post }) {
         : "";
 
     return (
-        <StyledCard>
+        <StyledCard onClick={handleCardClick}>
             <CardHeader
                 avatar={
                     <Avatar
@@ -132,6 +143,7 @@ function CardsNews({ post }) {
                 action={
                     <IconButton
                         aria-label="Opciones"
+                        onClick={(e) => e.stopPropagation()}
                         sx={{
                             color: "#999",
                             "&:hover": {
@@ -284,6 +296,7 @@ function CardsNews({ post }) {
                     </IconButton>
                     <IconButton
                         aria-label="Compartir"
+                        onClick={(e) => e.stopPropagation()}
                         sx={{
                             color: "#ffd700",
                             "&:hover": {

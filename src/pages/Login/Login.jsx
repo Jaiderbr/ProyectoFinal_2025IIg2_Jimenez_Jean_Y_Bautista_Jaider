@@ -15,13 +15,13 @@ const Login = () => {
         e.preventDefault();
         setError("");
 
-        // Validación básica de campos
+
         if (!email.trim() || !password) {
             setError("Por favor ingresa correo y contraseña.");
             return;
         }
 
-        // Validación de formato de correo
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError("El formato del correo no es válido.");
@@ -29,8 +29,16 @@ const Login = () => {
         }
 
         try {
-            await login(email, password);
-            navigate("/");
+            const userData = await login(email, password);
+
+
+            if (userData.role === "editor") {
+                navigate("/PanelEditor");
+            } else if (userData.role === "reportero") {
+                navigate("/PanelReportero");
+            } else {
+                navigate("/");
+            }
         } catch (err) {
             console.error("Error al iniciar sesión:", err);
             setError(err?.message || "Error al iniciar sesión. Intenta nuevamente.");

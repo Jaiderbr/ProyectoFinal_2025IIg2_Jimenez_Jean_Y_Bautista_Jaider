@@ -42,6 +42,7 @@ const MainPage = () => {
                 const { data, error } = await supabase
                     .from('posts')
                     .select('*')
+                    .eq('estado', 'Publicado')
                     .order('fechacreacion', { ascending: false });
 
                 if (error) throw error;
@@ -217,21 +218,6 @@ const MainPage = () => {
         <div className="mainmain">
             <Header onSectionClick={handleSectionClick} />
             <main>
-                <Button
-                    variant="contained"
-                    onClick={() => setShowForm(true)}
-                    sx={{
-                        backgroundColor: '#ffd700',
-                        color: '#0a0a0a',
-                        fontWeight: 700,
-                        '&:hover': {
-                            backgroundColor: '#ffaa00',
-                        },
-                    }}
-                >
-                    Añadir noticia
-                </Button>
-
                 {showForm && (
                     <Box className="form-card-wrapper">
                         <Card
@@ -528,7 +514,9 @@ const MainPage = () => {
                 <div className="container">
                     {(() => {
                         const normalized = (str) => (str || "").toString().toLowerCase();
+                        const activeSectionIds = new Set((secciones || []).filter(s => s.estado !== false).map(s => s.idseccion));
                         const filtered = (posts || [])
+                            .filter((p) => p && p.estado === 'Publicado' && activeSectionIds.has(p.categoria))
                             .filter((p) => {
                                 if (filter.type === "section") {
                                     const sec = secciones.find(s => s.idseccion === p.categoria);
@@ -558,7 +546,7 @@ const MainPage = () => {
                         return filtered.map((post) => {
                             const sec = secciones.find(s => s.idseccion === post.categoria);
                             const joined = { ...post, seccion_nombre: sec?.nombre };
-                            return <CardsNews key={post.id} post={joined} />;
+                            return <CardsNews key={post.id} post={joined} clickable />;
                         });
                     })()}
                 </div>

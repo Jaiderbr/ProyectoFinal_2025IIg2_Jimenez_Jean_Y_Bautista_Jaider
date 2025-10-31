@@ -12,7 +12,8 @@ const Header = ({ onSectionClick }) => {
             try {
                 const { data, error } = await supabase
                     .from('secciones')
-                    .select('*');
+                    .select('*')
+                    .eq('estado', true);
                 if (error) throw error;
                 setSections(data || []);
             } catch (error) {

@@ -7,7 +7,7 @@ const Register = () => {
     const navigate = useNavigate();
     const { register } = useAuth();
     const [form, setForm] = useState({
-        username: "", 
+        username: "",
         email: "",
         password: "",
         confirm: "",
@@ -23,7 +23,7 @@ const Register = () => {
         e.preventDefault();
         setError("");
 
-        // Validación mínima
+
         if (!form.username.trim() || !form.email.trim() || !form.password.trim()) {
             setError("Por favor completa todos los campos.");
             return;
@@ -47,7 +47,6 @@ const Register = () => {
     return (
         <div className="register-page">
             <div className="register-card">
-                {/* Logo */}
                 <div className="register-logo">
                     <svg viewBox="0 0 120 120" width="86" height="86" xmlns="http://www.w3.org/2000/svg">
                         <defs>
@@ -117,7 +116,6 @@ const Register = () => {
                         />
                     </label>
 
-                    {/* Selección de rol */}
                     <div className="field role-selector">
                         <span>Selecciona tu rol:</span>
                         <label>

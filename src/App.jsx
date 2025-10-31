@@ -4,6 +4,7 @@ import MainPage from "./pages/MainPage/MainPage";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import NotFound from "./pages/NotFound/NotFound";
+import NoticiaDetalle from "./pages/NoticiaDetalle/NoticiaDetalle";
 
 import PanelReportero from './pages/PanelReportero/PanelReportero.jsx';
 import PanelEditor from './pages/PanelEditor/PanelEditor.jsx';
@@ -16,6 +17,7 @@ function App() {
 
             <Routes>
                 <Route path='/' element={<MainPage />} />
+                <Route path='/noticia/:id' element={<NoticiaDetalle />} />
                 <Route path='/login' element={<Login />} />
                 <Route path='/register' element={<Register />} />
                 <Route path='/PanelReportero' element={<PanelReportero />} />
