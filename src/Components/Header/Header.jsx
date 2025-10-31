@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "../../client";
 import "./Header.css";
 import SectionCard from "../SectionCard/SectionCard.jsx";
 
@@ -28,7 +28,13 @@ const Header = ({ onSectionClick }) => {
             <header className="header">
                 <div className="header-container">
                     <div className="logo">
-                        <Link to="/">📰 NewsPortal</Link>
+                        <Link to="/">
+                            <span className="logo-icon">📰</span>
+                            <span className="logo-text">
+                                <span className="logo-news">NEWS</span>
+                                <span className="logo-portal">PORTAL</span>
+                            </span>
+                        </Link>
                     </div>
                     <div className="auth-buttons">
                         <Link to="/login" className="btn login-btn">

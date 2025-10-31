@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../client";
 import bcrypt from "bcryptjs";
 
 const AuthContext = createContext();

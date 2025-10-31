@@ -68,21 +68,26 @@ function CardsNews({ post }) {
     };
 
     const getChipColor = (cat) => {
-        const normalized = (cat || "")
+        if (!cat) return "#808080";
+
+        // Genera un color único basado en el hash del nombre de la categoría
+        const normalized = cat
             .toString()
             .toLowerCase()
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
-        switch (normalized) {
-            case "tecnologia":
-                return "info";
-            case "deportes":
-                return "success";
-            case "cultura":
-                return "secondary";
-            default:
-                return "default";
+
+        let hash = 0;
+        for (let i = 0; i < normalized.length; i++) {
+            hash = normalized.charCodeAt(i) + ((hash << 5) - hash);
         }
+
+        // Genera colores vibrantes usando HSL
+        const hue = Math.abs(hash % 360);
+        const saturation = 65 + (Math.abs(hash) % 20); // 65-85%
+        const lightness = 50 + (Math.abs(hash >> 8) % 15); // 50-65%
+
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     };
 
     const getAvatarColor = (author) => {
@@ -209,8 +214,9 @@ function CardsNews({ post }) {
                             borderRadius: "8px",
                             letterSpacing: "0.02em",
                             textTransform: "uppercase",
+                            backgroundColor: getChipColor(category),
+                            color: "#fff",
                         }}
-                        color={getChipColor(category)}
                     />
                 )}
                 <Typography
