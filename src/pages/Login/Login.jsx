@@ -1,144 +1,113 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../../Firebase/config";
+import { useAuth } from "../../Context/AuthContext";
 import "./Login.css";
 
 const Login = () => {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const [error, setError] = useState("");
+    const navigate = useNavigate();
+    const { login } = useAuth();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [showPass, setShowPass] = useState(false);
+    const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
 
-    // Validación básica de campos
-    if (!email.trim() || !password) {
-      setError("Por favor ingresa correo y contraseña.");
-      return;
-    }
+        // Validación básica de campos
+        if (!email.trim() || !password) {
+            setError("Por favor ingresa correo y contraseña.");
+            return;
+        }
 
-    // Validación de formato de correo
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("El formato del correo no es válido.");
-      return;
-    }
+        // Validación de formato de correo
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setError("El formato del correo no es válido.");
+            return;
+        }
 
-    try {
-      // Autenticación con Firebase Auth
-      const userCred = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCred.user;
+        try {
+            await login(email, password);
+            navigate("/");
+        } catch (err) {
+            console.error("Error al iniciar sesión:", err);
+            setError(err?.message || "Error al iniciar sesión. Intenta nuevamente.");
+        }
+    };
 
-      // Consultar datos adicionales desde Firestore
-      const userDocRef = doc(db, "Usuarios", user.uid);
-      const userDoc = await getDoc(userDocRef);
+    return (
+        <div className="login-page">
+            <div className="login-card" role="main" aria-labelledby="login-title">
 
-      if (!userDoc.exists()) {
-        setError("No se encontraron datos adicionales del usuario.");
-        return;
-      }
+                <div className="login-logo" aria-hidden="false">
+                    <svg viewBox="0 0 120 120" width="86" height="86" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+                                <stop offset="0" stopColor="#ffd700" />
+                                <stop offset="1" stopColor="#ffb000" />
+                            </linearGradient>
+                        </defs>
+                        <rect rx="20" width="120" height="120" fill="#0a0a0a" />
+                        <g transform="translate(18,24)">
+                            <rect width="84" height="56" rx="6" fill="url(#g1)" opacity="0.95" />
+                            <rect x="6" y="6" width="72" height="12" rx="2" fill="#0a0a0a" />
+                            <rect x="6" y="26" width="72" height="6" rx="2" fill="#0a0a0a" />
+                        </g>
+                    </svg>
+                    <h1 id="login-title">NewsPortal</h1>
+                </div>
 
-      const userData = userDoc.data();
-      console.log("Usuario autenticado:", userData);
+                <form className="login-form" onSubmit={handleSubmit} noValidate>
+                    {error && <div className="login-error" role="alert">{error}</div>}
 
-      if (userData.role === "reportero"){
-        navigate("/PanelReportero");
-      }else{
-        navigate("/PanelEditor");
-      }
-      
+                    <label className="field">
+                        <span className="label-text">Correo electrónico</span>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="correo@ejemplo.com"
+                            autoComplete="username"
+                            required
+                        />
+                    </label>
 
-    } catch (err) {
-      console.error("Error al iniciar sesión:", err.code);
+                    <label className="field">
+                        <span className="label-text">Contraseña</span>
+                        <div className="password-wrapper">
+                            <input
+                                type={showPass ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                autoComplete="current-password"
+                                required
+                            />
+                            <button
+                                type="button"
+                                className="show-toggle"
+                                aria-pressed={showPass}
+                                onClick={() => setShowPass((s) => !s)}
+                                title={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
+                            >
+                                {showPass ? "Ocultar" : "Mostrar"}
+                            </button>
+                        </div>
+                    </label>
 
-      if (err.code === "auth/invalid-email") {
-        setError("El formato del correo no es válido.");
-      } else if (err.code === "auth/user-not-found") {
-        setError("El usuario no existe.");
-      } else if (err.code === "auth/wrong-password") {
-        setError("Contraseña incorrecta.");
-      } else {
-        setError("Error al iniciar sesión. Intenta nuevamente.");
-      }
-    }
-  };
+                    <button className="btn submit" type="submit">Iniciar sesión</button>
 
-  return (
-    <div className="login-page">
-      <div className="login-card" role="main" aria-labelledby="login-title">
-
-        <div className="login-logo" aria-hidden="false">
-          <svg viewBox="0 0 120 120" width="86" height="86" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0" stopColor="#ffd700" />
-                <stop offset="1" stopColor="#ffb000" />
-              </linearGradient>
-            </defs>
-            <rect rx="20" width="120" height="120" fill="#0a0a0a" />
-            <g transform="translate(18,24)">
-              <rect width="84" height="56" rx="6" fill="url(#g1)" opacity="0.95" />
-              <rect x="6" y="6" width="72" height="12" rx="2" fill="#0a0a0a" />
-              <rect x="6" y="26" width="72" height="6" rx="2" fill="#0a0a0a" />
-            </g>
-          </svg>
-          <h1 id="login-title">NewsPortal</h1>
-        </div>
-
-        <form className="login-form" onSubmit={handleSubmit} noValidate>
-          {error && <div className="login-error" role="alert">{error}</div>}
-
-          <label className="field">
-            <span className="label-text">Correo electrónico</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="correo@ejemplo.com"
-              autoComplete="username"
-              required
-            />
-          </label>
-
-          <label className="field">
-            <span className="label-text">Contraseña</span>
-            <div className="password-wrapper">
-              <input
-                type={showPass ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                required
-              />
-              <button
-                type="button"
-                className="show-toggle"
-                aria-pressed={showPass}
-                onClick={() => setShowPass((s) => !s)}
-                title={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
-              >
-                {showPass ? "Ocultar" : "Mostrar"}
-              </button>
+                    <div className="divider" />
+                    <p className="signup-cta">
+                        ¿No tienes cuenta?{" "}
+                        <Link to="/register" className="link-register">Regístrate aquí</Link>
+                    </p>
+                </form>
             </div>
-          </label>
-
-          <button className="btn submit" type="submit">Iniciar sesión</button>
-
-          <div className="divider" />
-          <p className="signup-cta">
-            ¿No tienes cuenta?{" "}
-            <Link to="/register" className="link-register">Regístrate aquí</Link>
-          </p>
-        </form>
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default Login;

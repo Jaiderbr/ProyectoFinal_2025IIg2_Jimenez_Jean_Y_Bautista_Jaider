@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../Firebase/config";
+import { supabase } from "../../lib/supabaseClient";
 import "./Header.css";
 import SectionCard from "../SectionCard/SectionCard.jsx";
 
@@ -11,12 +10,11 @@ const Header = ({ onSectionClick }) => {
     useEffect(() => {
         const fetchSections = async () => {
             try {
-                const querySnapshot = await getDocs(collection(db, "Secciones"));
-                const fetchedSections = querySnapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                }));
-                setSections(fetchedSections);
+                const { data, error } = await supabase
+                    .from('secciones')
+                    .select('*');
+                if (error) throw error;
+                setSections(data || []);
             } catch (error) {
                 console.error("Error al obtener secciones:", error);
             }
@@ -44,11 +42,6 @@ const Header = ({ onSectionClick }) => {
                 <div className="left-panel">
                     <h2>📑 View Sections</h2>
                     <p>Administra las secciones del portal de noticias.</p>
-                    <img
-                        src="/assets/mail-illustration.png"
-                        alt="Ilustración"
-                        className="illustration"
-                    />
                 </div>
 
                 <div className="right-panel">
@@ -56,7 +49,7 @@ const Header = ({ onSectionClick }) => {
                         {sections.length > 0 ? (
                             sections.map((sec) => (
                                 <SectionCard
-                                    key={sec.id}
+                                    key={sec.idseccion}
                                     nombre={sec.nombre}
                                     descripcion={sec.descripcion}
                                     estado={sec.estado}

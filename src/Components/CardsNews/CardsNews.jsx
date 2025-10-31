@@ -92,17 +92,19 @@ function CardsNews({ post }) {
     };
 
     const title = post.titulo || post.Title || post.title || "Sin título";
-    const caption = post.subtitulo || post.Caption || post.subtitle || "Sin descripción";
-    const category = post.categoria || post.Category || post.category || "Sin categoría";
-    const imageUrl = post.imagen || post.Img || post.image || "";
+    const caption = post.subtitulo || post.descripcion || post.contenido || post.Caption || post.subtitle || "Sin descripción";
+    const category = post.seccion_nombre || post.categoria || post.Category || post.category || "";
+    const imageUrl = post.imagen || post.imagen_url || post.Img || post.image || "";
     const author = post.autor || post.Author || post.author || "Anónimo";
-    const createdAtTS = post.fechaCreacion || post.createdAt;
-    const createdAt = createdAtTS && createdAtTS.seconds
-        ? new Date(createdAtTS.seconds * 1000).toLocaleDateString("es-ES", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-        })
+    const createdAtTS = post.fechacreacion || post.fechapublicacion || post.fechaPublicacion || post.fechaCreacion || post.createdAt || post.creado_en;
+    const createdAt = createdAtTS
+        ? (createdAtTS?.seconds
+            ? new Date(createdAtTS.seconds * 1000)
+            : new Date(createdAtTS)).toLocaleDateString("es-ES", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+            })
         : "";
 
     return (
@@ -196,7 +198,7 @@ function CardsNews({ post }) {
             )}
 
             <CardContent sx={{ pt: 2.5, pb: 1, flexGrow: 1 }}>
-                {(post.categoria || post.Category) && (
+                {(category) && (
                     <Chip
                         label={category}
                         size="small"
@@ -231,7 +233,7 @@ function CardsNews({ post }) {
             <Divider sx={{ mx: 2, borderColor: "#333" }} />
 
             <CardActions disableSpacing sx={{ px: 2, py: 1.5, mt: "auto" }}>
-                {(post.contenido || post.Content) && String(post.contenido || post.Content).trim().length > 0 && (
+                {(post.contenido || post.descripcion || post.Content) && String(post.contenido || post.descripcion || post.Content).trim().length > 0 && (
                     <Button
                         onClick={handleExpandClick}
                         endIcon={
@@ -310,7 +312,7 @@ function CardsNews({ post }) {
                             color: "#e0e0e0",
                         }}
                     >
-                        {post.contenido || post.Content || "Sin contenido"}
+                        {post.contenido || post.descripcion || post.Content || "Sin contenido"}
                     </Typography>
                 </CardContent>
             </Collapse>

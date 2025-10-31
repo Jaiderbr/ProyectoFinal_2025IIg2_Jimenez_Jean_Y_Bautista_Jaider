@@ -3,32 +3,16 @@ import Header from "../../Components/Header/Header";
 import Footer from "../../Components/Footer/Footer";
 import Button from "@mui/material/Button";
 import CardsNews from "../../Components/CardsNews/CardsNews";
-import {
-    Card,
-    CardContent,
-    CardActions,
-    Typography,
-    TextField,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Stack,
-    Box,
-    InputAdornment,
-    OutlinedInput,
-    Switch,
-    FormControlLabel,
-} from "@mui/material";
+import { Card, CardContent, CardActions, Typography, TextField, FormControl, InputLabel, Select, MenuItem, Stack, Box, InputAdornment, OutlinedInput, Switch, FormControlLabel, } from "@mui/material";
 import CategoryOutlined from "@mui/icons-material/CategoryOutlined";
 import FlagOutlined from "@mui/icons-material/FlagOutlined";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import { collection, addDoc, getDocs, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../../Firebase/config";
+import { supabase } from "../../client";
+import { useAuth } from "../../Context/AuthContext";
 import "./MainPage.css";
 
 const MainPage = () => {
+    const BUCKET = import.meta.env.VITE_SUPABASE_BUCKET || 'news';
     const [showForm, setShowForm] = useState(false);
     const [form, setForm] = useState({
         autor: "",
@@ -48,15 +32,20 @@ const MainPage = () => {
     const [imagePreview, setImagePreview] = useState("");
     const [uploadProgress, setUploadProgress] = useState(0);
     const [secciones, setSecciones] = useState([]);
-    const [filter, setFilter] = useState({ type: "featured", value: null });
+    const [filter, setFilter] = useState({ type: "all", value: null });
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const snapshot = await getDocs(collection(db, "Posts"));
-                const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-                setPosts(data);
+                const { data, error } = await supabase
+                    .from('posts')
+                    .select('*')
+                    .order('fechacreacion', { ascending: false });
+
+                if (error) throw error;
+                setPosts(data || []);
             } catch (err) {
                 console.error("Error al obtener posts:", err);
             }
@@ -64,9 +53,12 @@ const MainPage = () => {
 
         const fetchSecciones = async () => {
             try {
-                const snap = await getDocs(collection(db, "Secciones"));
-                const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-                setSecciones(data.filter((s) => s.estado === true || s.estado === undefined));
+                const { data, error } = await supabase
+                    .from('secciones')
+                    .select('*');
+
+                if (error) throw error;
+                setSecciones((data || []).filter(s => s.estado !== false));
             } catch (err) {
                 console.error("Error al obtener secciones:", err);
             }
@@ -135,29 +127,46 @@ const MainPage = () => {
             let imageUrl = form.imagen;
 
             if (imageFile) {
-                console.log("[upload] iniciando subida a Storage", { bucket: storage.app?.options?.storageBucket });
-                const storageRef = ref(storage, `posts/${Date.now()}_${imageFile.name}`);
-                const snapshot = await withTimeout(uploadBytes(storageRef, imageFile), 25000, "subida de imagen");
-                imageUrl = await withTimeout(getDownloadURL(snapshot.ref), 15000, "obtención de URL de imagen");
+                console.log("[upload] iniciando subida a Supabase Storage", { bucket: BUCKET });
+                const filePath = `posts/${Date.now()}_${imageFile.name}`;
+                await withTimeout(
+                    supabase.storage.from(BUCKET).upload(filePath, imageFile, {
+                        cacheControl: '3600',
+                        upsert: false,
+                    }),
+                    25000,
+                    "subida de imagen"
+                );
+                const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
+                imageUrl = pub?.publicUrl || "";
                 setUploadProgress(100);
                 console.log("[upload] subida completa, url:", imageUrl);
             }
 
-            console.log("[firestore] creando documento en Posts...");
-            const newDoc = await withTimeout(addDoc(collection(db, "Posts"), {
-                autor: form.autor || "Anónimo",
-                subtitulo: form.subtitulo,
-                categoria: form.categoria,
+            console.log("[supabase] creando registro en posts...");
+            const nowIso = new Date().toISOString();
+            const seccion = secciones.find(s => s.nombre === form.categoria);
+            const payload = {
+                autor: form.autor || user?.nombre || "Anónimo",
+                titulo: form.titulo,
+                subtitulo: form.subtitulo || "",
+                categoria: seccion?.idseccion || null,
                 contenido: form.contenido,
                 imagen: imageUrl || "",
-                estado: form.estado || "borrador",
-                titulo: form.titulo,
+                estado: form.estado === "publicado",
                 destacado: Boolean(form.destacado),
-                fechaCreacion: serverTimestamp(),
-                fechaActualizacion: serverTimestamp(),
-            }), 20000, "registro de la noticia");
+                fechacreacion: nowIso,
+                fechaactualizacion: nowIso,
+            };
 
-            console.log("Post guardado:", newDoc.id);
+
+            const { data: created, error: insertErr } = await withTimeout(
+                supabase.from('posts').insert([payload]).select().single(),
+                20000,
+                "registro de la noticia"
+            );
+            if (insertErr) throw insertErr;
+            console.log("Post guardado:", created?.id);
 
             setForm({
                 autor: "",
@@ -176,7 +185,7 @@ const MainPage = () => {
             setShowForm(false);
             setPosts((prev) => [
                 ...prev,
-                { id: newDoc.id, ...form, imagen: imageUrl || "", fechaCreacion: new Date() },
+                created || { ...payload },
             ]);
         } catch (error) {
             console.error("[submit] Error:", error);
@@ -521,16 +530,21 @@ const MainPage = () => {
                         const normalized = (str) => (str || "").toString().toLowerCase();
                         const filtered = (posts || [])
                             .filter((p) => {
-                                const isFeatured = p.destacado === true;
-                                const cat = p.categoria || p.Category || p.category;
-                                if (filter.type === "featured") return isFeatured;
-                                if (filter.type === "section") return normalized(cat) === normalized(filter.value);
+                                if (filter.type === "section") {
+                                    const sec = secciones.find(s => s.idseccion === p.categoria);
+                                    const name = sec?.nombre;
+                                    return normalized(name) === normalized(filter.value);
+                                }
                                 return true;
                             })
                             .sort((a, b) => {
                                 const getTime = (x) => {
-                                    const ts = x.fechaCreacion || x.createdAt;
-                                    return ts?.seconds ? ts.seconds : 0;
+                                    const ts = x.fechacreacion || x.fechapublicacion || x.fechaPublicacion || x.creado_en || x.fechaCreacion || x.createdAt || x.created_at;
+                                    if (!ts) return 0;
+                                    // Firestore Timestamp
+                                    if (typeof ts === 'object' && ts?.seconds) return ts.seconds * 1000;
+                                    const t = Date.parse(ts);
+                                    return Number.isNaN(t) ? 0 : t;
                                 };
                                 return getTime(b) - getTime(a);
                             });
@@ -541,7 +555,11 @@ const MainPage = () => {
                                 </Typography>
                             );
                         }
-                        return filtered.map((post) => <CardsNews key={post.id} post={post} />);
+                        return filtered.map((post) => {
+                            const sec = secciones.find(s => s.idseccion === post.categoria);
+                            const joined = { ...post, seccion_nombre: sec?.nombre };
+                            return <CardsNews key={post.id} post={joined} />;
+                        });
                     })()}
                 </div>
             </main>
