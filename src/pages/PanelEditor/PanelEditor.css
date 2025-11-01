@@ -27,11 +27,17 @@
     margin: 0 auto;
 }
 
+.panel-grid {
+    align-items: stretch;
+    justify-content: center;
+}
+
 .noticia-card {
     background: linear-gradient(180deg, #0b0b0b 0%, #0f0f0f 100%) !important;
     border: 1px solid #333 !important;
     border-radius: 12px !important;
     transition: all 0.3s ease !important;
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -75,4 +81,10 @@
     .noticia-card .MuiCardActions-root button {
         width: 100%;
     }
+}
+
+/* En pantallas medianas/pequeñas, fija un ancho máximo uniforme y centra las cards */
+/* Mantener un ancho máximo uniforme para tarjetas cuando se centre el grid */
+.noticia-card {
+    max-width: 100%;
 }

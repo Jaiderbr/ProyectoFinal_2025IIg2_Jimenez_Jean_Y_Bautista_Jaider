@@ -45,7 +45,6 @@ const PanelReportero = () => {
 
     const fetchNoticias = async () => {
         try {
-            // Primero obtenemos las noticias del autor
             const { data: postsData, error: postsError } = await supabase
                 .from('posts')
                 .select('*')

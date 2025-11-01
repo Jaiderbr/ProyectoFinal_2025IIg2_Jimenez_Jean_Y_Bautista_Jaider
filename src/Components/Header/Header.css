@@ -171,8 +171,7 @@
     margin-top: 40px;
 }
 
-/* Responsive: tablets y móviles */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .sections-container {
         grid-template-columns: 1fr 2fr;
         gap: 20px;

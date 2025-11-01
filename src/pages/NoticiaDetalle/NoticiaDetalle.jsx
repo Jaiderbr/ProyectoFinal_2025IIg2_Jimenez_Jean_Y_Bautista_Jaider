@@ -35,7 +35,6 @@ const NoticiaDetalle = () => {
             if (postError) throw postError;
             if (!postData) throw new Error('Noticia no encontrada');
 
-            // Obtener el nombre de la sección
             if (postData.categoria) {
                 const { data: seccionData } = await supabase
                     .from('secciones')
@@ -83,15 +82,19 @@ const NoticiaDetalle = () => {
     };
 
     const handleShare = () => {
+        const shareUrl = window.location.href;
         if (navigator.share) {
             navigator.share({
                 title: noticia.titulo,
-                text: noticia.subtitulo,
-                url: window.location.href
+                text: noticia.subtitulo || noticia.titulo,
+                url: shareUrl
+            }).catch(() => {
+                navigator.clipboard.writeText(shareUrl);
+                alert('Enlace copiado al portapapeles');
             });
         } else {
-            navigator.clipboard.writeText(window.location.href);
-            alert('¡Enlace copiado al portapapeles!');
+            navigator.clipboard.writeText(shareUrl);
+            alert('Enlace copiado al portapapeles');
         }
     };
 

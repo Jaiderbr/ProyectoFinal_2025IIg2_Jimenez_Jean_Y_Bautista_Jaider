@@ -383,11 +383,26 @@ const PanelEditor = () => {
                 <Tabs
                     value={tabValue}
                     onChange={(e, newValue) => setTabValue(newValue)}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    allowScrollButtonsMobile
                     sx={{
                         mb: 3,
-                        '& .MuiTab-root': { color: '#999', fontWeight: 600 },
+                        minHeight: 44,
+                        '& .MuiTab-root': {
+                            color: '#999',
+                            fontWeight: 600,
+                            minWidth: 'fit-content',
+                            px: 2,
+                            minHeight: 44
+                        },
                         '& .Mui-selected': { color: '#ffd700' },
-                        '& .MuiTabs-indicator': { backgroundColor: '#ffd700' }
+                        '& .MuiTabs-indicator': { backgroundColor: '#ffd700' },
+                        '& .MuiTabs-scrollButtons': {
+                            color: '#ffd700',
+                            alignSelf: 'center',
+                            height: 44
+                        }
                     }}
                 >
                     <Tab label={`Pendientes (${noticiasPendientes.length})`} />
@@ -396,7 +411,7 @@ const PanelEditor = () => {
                 </Tabs>
 
                 {tabValue !== 2 ? (
-                    <Grid container spacing={3}>
+                    <Grid container spacing={3} className="panel-grid">
                         {noticiasActuales.length === 0 ? (
                             <Grid item xs={12}>
                                 <Typography sx={{ color: '#999', textAlign: 'center', py: 4 }}>
@@ -405,10 +420,16 @@ const PanelEditor = () => {
                             </Grid>
                         ) : (
                             noticiasActuales.map((noticia) => (
-                                <Grid item xs={12} md={6} lg={4} key={noticia.id}>
-                                    <Card className="noticia-card">
+                                <Grid item xs={12} md={6} lg={4} key={noticia.id} sx={{ display: 'flex' }}>
+                                    <Card className="noticia-card" sx={{ width: '100%', maxWidth: 380, mx: 'auto' }}>
                                         <CardContent>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                gap: 2,
+                                                mb: 1
+                                            }}>
                                                 {getEstadoChip(noticia.estado)}
                                                 <Chip
                                                     label={noticia.secciones?.nombre || 'Sin sección'}
@@ -521,10 +542,10 @@ const PanelEditor = () => {
                                 No hay secciones registradas
                             </Typography>
                         ) : (
-                            <Grid container spacing={3}>
+                            <Grid container spacing={3} className="panel-grid">
                                 {seccionesAdmin.map((sec) => (
-                                    <Grid item xs={12} md={6} lg={4} key={sec.idseccion}>
-                                        <Card className="noticia-card">
+                                    <Grid item xs={12} md={6} lg={4} key={sec.idseccion} sx={{ display: 'flex' }}>
+                                        <Card className="noticia-card" sx={{ width: '100%', maxWidth: 380, mx: 'auto' }}>
                                             <CardContent>
                                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                                                     <Chip

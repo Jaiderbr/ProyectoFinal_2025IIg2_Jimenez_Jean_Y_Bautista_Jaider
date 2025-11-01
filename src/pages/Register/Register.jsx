@@ -140,9 +140,11 @@ const Register = () => {
                         </label>
                     </div>
 
-                    <button type="submit" className="btn submit">
-                        Registrarme
-                    </button>
+                    <button type="submit" className="btn submit">Registrarme</button>
+
+                    <Link to="/" className="btn back" style={{ textAlign: 'center' }}>
+                        Volver al inicio
+                    </Link>
 
                     <div className="divider"></div>
 

@@ -11,21 +11,18 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Cargar sesión desde localStorage
         const raw = localStorage.getItem("sessionUser");
         if (raw) {
             try {
                 const parsed = JSON.parse(raw);
                 if (parsed?.id && parsed?.email) setUser(parsed);
             } catch {
-                // ignore
             }
         }
         setLoading(false);
     }, []);
 
     const login = async (email, password) => {
-        // Busca usuario por email y valida contraseña (bcrypt o texto plano)
         const { data, error } = await supabase
             .from('usuarios')
             .select('*')
@@ -54,7 +51,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     const register = async (nombre, email, password, rol = 'usuario') => {
-        // Inserta nuevo usuario con contraseña hasheada
         const hashed = await bcrypt.hash(password, 10);
         const { data, error } = await supabase
             .from('usuarios')

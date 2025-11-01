@@ -7,7 +7,6 @@
     --maxw: 420px;
 }
 
-/* Página centrada */
 .register-page {
     min-height: 100vh;
     display: flex;
@@ -17,7 +16,6 @@
     background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
 }
 
-/* Tarjeta */
 .register-card {
     width: 100%;
     max-width: var(--maxw);
@@ -29,7 +27,6 @@
     border: 1px solid rgba(255, 215, 0, 0.06);
 }
 
-/* Logo */
 .register-logo {
     display: flex;
     align-items: center;
@@ -45,14 +42,12 @@
     font-weight: 700;
 }
 
-/* Formulario */
 .register-form {
     display: flex;
     flex-direction: column;
     gap: 0.9rem;
 }
 
-/* Campos */
 .field {
     display: flex;
     flex-direction: column;
@@ -80,7 +75,6 @@
     box-shadow: 0 6px 18px rgba(255, 215, 0, 0.08);
 }
 
-/* Botón principal */
 .btn.submit {
     background: linear-gradient(90deg, var(--accent), #ffb200);
     color: #000;
@@ -97,7 +91,25 @@
     box-shadow: 0 10px 30px rgba(255, 176, 0, 0.12);
 }
 
-/* Error */
+.btn.back {
+    display: block;
+    margin-top: 0.6rem;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.btn.back:hover {
+    background: rgba(255, 215, 0, 0.08);
+    transform: translateY(-1px);
+}
+
 .register-error {
     background: rgba(255, 0, 0, 0.08);
     color: #ffb3b3;
@@ -107,14 +119,12 @@
     font-size: 0.9rem;
 }
 
-/* Divider */
 .divider {
     height: 1px;
     background: rgba(255, 255, 255, 0.04);
     margin: 0.8rem 0;
 }
 
-/* CTA inferior */
 .login-cta {
     color: #ddd;
     font-size: 0.9rem;
@@ -131,7 +141,6 @@
     text-decoration: underline;
 }
 
-/* Responsive */
 @media (max-width: 520px) {
     .register-card {
         padding: 1.25rem;

@@ -14,12 +14,19 @@ import Typography from "@mui/material/Typography";
 import Chip from "@mui/material/Chip";
 import Box from "@mui/material/Box";
 import Divider from "@mui/material/Divider";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
 import { red, blue, green, purple } from "@mui/material/colors";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import LinkIcon from "@mui/icons-material/Link";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import ReportIcon from "@mui/icons-material/Report";
 
 const StyledCard = styled(Card)(({ theme }) => ({
     width: "100%",
@@ -61,6 +68,8 @@ function CardsNews({ post, clickable = false }) {
     const navigate = useNavigate();
     const [expanded, setExpanded] = React.useState(false);
     const [liked, setLiked] = React.useState(false);
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const openMenu = Boolean(anchorEl);
 
     const handleCardClick = () => {
         if (clickable && post.id) {
@@ -78,10 +87,41 @@ function CardsNews({ post, clickable = false }) {
         setLiked(!liked);
     };
 
+    const handleMenuOpen = (e) => {
+        e.stopPropagation();
+        setAnchorEl(e.currentTarget);
+    };
+
+    const handleMenuClose = (e) => {
+        e?.stopPropagation();
+        setAnchorEl(null);
+    };
+
+    const handleCopyLink = (e) => {
+        e.stopPropagation();
+        const url = `${window.location.origin}${window.location.pathname}#/noticia/${post.id}`;
+        navigator.clipboard.writeText(url);
+        alert('Enlace copiado al portapapeles');
+        handleMenuClose();
+    };
+
+    const handleViewFull = (e) => {
+        e.stopPropagation();
+        if (post.id) {
+            navigate(`/noticia/${post.id}`);
+        }
+        handleMenuClose();
+    };
+
+    const handleReport = (e) => {
+        e.stopPropagation();
+        alert('Gracias por contribuir. El equipo técnico revisará la publicación.');
+        handleMenuClose();
+    };
+
     const getChipColor = (cat) => {
         if (!cat) return "#808080";
 
-        // Genera un color único basado en el hash del nombre de la categoría
         const normalized = cat
             .toString()
             .toLowerCase()
@@ -93,7 +133,6 @@ function CardsNews({ post, clickable = false }) {
             hash = normalized.charCodeAt(i) + ((hash << 5) - hash);
         }
 
-        // Genera colores vibrantes usando HSL
         const hue = Math.abs(hash % 360);
         const saturation = 65 + (Math.abs(hash) % 20); // 65-85%
         const lightness = 50 + (Math.abs(hash >> 8) % 15); // 50-65%
@@ -141,21 +180,56 @@ function CardsNews({ post, clickable = false }) {
                     </Avatar>
                 }
                 action={
-                    <IconButton
-                        aria-label="Opciones"
-                        onClick={(e) => e.stopPropagation()}
-                        sx={{
-                            color: "#999",
-                            "&:hover": {
-                                backgroundColor: "#2a2a2a",
-                                color: "#ffd700",
-                                transform: "rotate(90deg)",
-                                transition: "transform 0.3s ease"
-                            }
-                        }}
-                    >
-                        <MoreVertIcon />
-                    </IconButton>
+                    <>
+                        <IconButton
+                            aria-label="Opciones"
+                            onClick={handleMenuOpen}
+                            sx={{
+                                color: "#999",
+                                "&:hover": {
+                                    backgroundColor: "#2a2a2a",
+                                    color: "#ffd700",
+                                    transform: "rotate(90deg)",
+                                    transition: "transform 0.3s ease"
+                                }
+                            }}
+                        >
+                            <MoreVertIcon />
+                        </IconButton>
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={openMenu}
+                            onClose={handleMenuClose}
+                            onClick={(e) => e.stopPropagation()}
+                            PaperProps={{
+                                sx: {
+                                    backgroundColor: '#1a1a1a',
+                                    border: '1px solid #333',
+                                    color: '#fff',
+                                    minWidth: 200
+                                }
+                            }}
+                        >
+                            <MenuItem onClick={handleCopyLink}>
+                                <ListItemIcon>
+                                    <LinkIcon sx={{ color: '#ffd700' }} />
+                                </ListItemIcon>
+                                <ListItemText>Copiar enlace</ListItemText>
+                            </MenuItem>
+                            <MenuItem onClick={handleViewFull}>
+                                <ListItemIcon>
+                                    <OpenInNewIcon sx={{ color: '#4CAF50' }} />
+                                </ListItemIcon>
+                                <ListItemText>Ver completa</ListItemText>
+                            </MenuItem>
+                            <MenuItem onClick={handleReport}>
+                                <ListItemIcon>
+                                    <ReportIcon sx={{ color: '#f44336' }} />
+                                </ListItemIcon>
+                                <ListItemText>Reportar</ListItemText>
+                            </MenuItem>
+                        </Menu>
+                    </>
                 }
                 titleTypographyProps={{
                     variant: "h6",
@@ -296,7 +370,23 @@ function CardsNews({ post, clickable = false }) {
                     </IconButton>
                     <IconButton
                         aria-label="Compartir"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            const url = `${window.location.origin}${window.location.pathname}#/noticia/${post.id}`;
+                            if (navigator.share) {
+                                navigator.share({
+                                    title: title,
+                                    text: caption,
+                                    url: url
+                                }).catch(() => {
+                                    navigator.clipboard.writeText(url);
+                                    alert('Enlace copiado al portapapeles');
+                                });
+                            } else {
+                                navigator.clipboard.writeText(url);
+                                alert('Enlace copiado al portapapeles');
+                            }
+                        }}
                         sx={{
                             color: "#ffd700",
                             "&:hover": {

@@ -1,6 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
+import { Box, Typography, Link } from "@mui/material";
+import { Email, GitHub } from "@mui/icons-material";
 import "./Footer.css";
 
 const Footer = () => {
@@ -16,30 +16,43 @@ const Footer = () => {
                     </p>
                 </div>
 
-                <div className="footer-links">
-                    <h3>Enlaces rápidos</h3>
-                    <ul>
-                        <li><Link to="/">Inicio</Link></li>
-                        <li><Link to="/category/tecnologia">Tecnología</Link></li>
-                        <li><Link to="/category/deportes">Deportes</Link></li>
-                        <li><Link to="/category/cultura">Cultura</Link></li>
-                    </ul>
-                </div>
-
-                <div className="footer-social">
-                    <h3>Síguenos</h3>
-                    <div className="social-icons">
-                        <a href="https://facebook.com" target="_blank" rel="noreferrer">
-                            <FaFacebook />
-                        </a>
-                        <a href="https://instagram.com" target="_blank" rel="noreferrer">
-                            <FaInstagram />
-                        </a>
-                        <a href="https://twitter.com" target="_blank" rel="noreferrer">
-                            <FaTwitter />
-                        </a>
-                    </div>
-                </div>
+                <Box className="footer-section">
+                    <Typography variant="h6" className="footer-title simpsons-text">
+                        Authors
+                    </Typography>
+                    <Box className="authors-grid">
+                        <Box className="author-card">
+                            <Typography variant="body1" className="author-name simpsons-text">
+                                Jaider Bautista Rodriguez
+                            </Typography>
+                            <Box className="author-links">
+                                <Link href="mailto:jaid.bautista@udla.edu.co" className="author-link">
+                                    <Email sx={{ fontSize: 16, mr: 0.5 }} />
+                                    Contact
+                                </Link>
+                                <Link href="https://github.com/Jaiderbr" target="_blank" rel="noreferrer" className="author-link">
+                                    <GitHub sx={{ fontSize: 16, mr: 0.5 }} />
+                                    GitHub
+                                </Link>
+                            </Box>
+                        </Box>
+                        <Box className="author-card">
+                            <Typography variant="body1" className="author-name simpsons-text">
+                                Jean Carlos Jimenez Ortega
+                            </Typography>
+                            <Box className="author-links">
+                                <Link href="mailto:jean.jimenez@udla.edu.co" className="author-link">
+                                    <Email sx={{ fontSize: 16, mr: 0.5 }} />
+                                    Contact
+                                </Link>
+                                <Link href="https://github.com/Jeank-J" target="_blank" rel="noreferrer" className="author-link">
+                                    <GitHub sx={{ fontSize: 16, mr: 0.5 }} />
+                                    GitHub
+                                </Link>
+                            </Box>
+                        </Box>
+                    </Box>
+                </Box>
             </div>
 
             <div className="footer-bottom">

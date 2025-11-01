@@ -529,7 +529,6 @@ const MainPage = () => {
                                 const getTime = (x) => {
                                     const ts = x.fechacreacion || x.fechapublicacion || x.fechaPublicacion || x.creado_en || x.fechaCreacion || x.createdAt || x.created_at;
                                     if (!ts) return 0;
-                                    // Firestore Timestamp
                                     if (typeof ts === 'object' && ts?.seconds) return ts.seconds * 1000;
                                     const t = Date.parse(ts);
                                     return Number.isNaN(t) ? 0 : t;

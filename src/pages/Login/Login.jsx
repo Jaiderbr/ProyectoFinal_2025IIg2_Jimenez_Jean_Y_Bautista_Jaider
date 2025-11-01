@@ -107,6 +107,10 @@ const Login = () => {
 
                     <button className="btn submit" type="submit">Iniciar sesión</button>
 
+                    <Link to="/" className="btn back" style={{ textAlign: 'center' }}>
+                        Volver al inicio
+                    </Link>
+
                     <div className="divider" />
                     <p className="signup-cta">
                         ¿No tienes cuenta?{" "}
