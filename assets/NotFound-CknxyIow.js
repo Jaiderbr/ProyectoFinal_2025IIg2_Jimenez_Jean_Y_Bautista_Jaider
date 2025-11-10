@@ -1,0 +1,1 @@
+import{a as e}from"./rolldown-runtime-Cn8xt2Gj.js";import{ht as t,pt as n}from"./mui-Ec-9_KFF.js";t();var r=e(n()),i=()=>(0,r.jsx)(`div`,{children:`NotFound`});export{i as default};
