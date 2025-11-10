@@ -743,6 +743,77 @@ const PanelEditor = () => {
                     )}
                 </DialogActions>
             </Dialog>
+
+            <Dialog open={openSeccionDialog} onClose={handleCloseSeccionDialog} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ backgroundColor: '#1a1a1a', color: '#ffd700' }}>
+                    {editingSeccion ? 'Editar Sección' : 'Nueva Sección'}
+                </DialogTitle>
+                <DialogContent sx={{ backgroundColor: '#0a0a0a', pt: 3 }}>
+                    <TextField
+                        fullWidth
+                        label="Nombre de la Sección"
+                        value={seccionForm.nombre}
+                        onChange={(e) => setSeccionForm({ ...seccionForm, nombre: e.target.value })}
+                        margin="normal"
+                        required
+                        sx={{
+                            '& .MuiInputLabel-root': { color: '#999' },
+                            '& .MuiOutlinedInput-root': {
+                                color: '#fff',
+                                '& fieldset': { borderColor: '#333' },
+                                '&:hover fieldset': { borderColor: '#ffd700' },
+                            }
+                        }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Descripción"
+                        value={seccionForm.descripcion}
+                        onChange={(e) => setSeccionForm({ ...seccionForm, descripcion: e.target.value })}
+                        margin="normal"
+                        multiline
+                        rows={3}
+                        sx={{
+                            '& .MuiInputLabel-root': { color: '#999' },
+                            '& .MuiOutlinedInput-root': {
+                                color: '#fff',
+                                '& fieldset': { borderColor: '#333' },
+                                '&:hover fieldset': { borderColor: '#ffd700' },
+                            }
+                        }}
+                    />
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={seccionForm.estado}
+                                onChange={(e) => setSeccionForm({ ...seccionForm, estado: e.target.checked })}
+                                sx={{
+                                    '& .MuiSwitch-switchBase.Mui-checked': { color: '#ffd700' },
+                                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#ffd700' }
+                                }}
+                            />
+                        }
+                        label="Activa"
+                        sx={{ mt: 2, color: '#999' }}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ backgroundColor: '#1a1a1a', p: 2 }}>
+                    <Button onClick={handleCloseSeccionDialog} sx={{ color: '#999' }}>
+                        Cancelar
+                    </Button>
+                    <Button
+                        onClick={handleSaveSeccion}
+                        variant="contained"
+                        sx={{
+                            background: 'linear-gradient(90deg, #ffd700, #ffb200)',
+                            color: '#000',
+                            fontWeight: 700
+                        }}
+                    >
+                        {editingSeccion ? 'Guardar Cambios' : 'Crear Sección'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
